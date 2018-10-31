@@ -38,8 +38,8 @@ func (skipList *SkipList) Insert(key int) {
 		for {
 			if node.Forward[i].Value != nil && node.Forward[i].Value.(int) < key {
 				node = &node.Forward[i]
-			}else{
-				break;
+			} else {
+				break
 			}
 		}
 		update[i] = node
