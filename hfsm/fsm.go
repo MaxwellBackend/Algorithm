@@ -3,7 +3,7 @@ package hfsm
 type FsmId string
 
 type IFsm interface {
-	Enter()
+	Enter(id StateId)
 	Update()
 	Exit()
 	RegisterEvent(event StateEvent, handler EventHandler)
@@ -22,17 +22,17 @@ type FsmBase struct {
 	registerEventHandler map[StateEvent]EventHandler
 }
 
-func (fb *FsmBase) Init(id FsmId, root IRoot) {
+func (fb *FsmBase) Init(id FsmId, root IRoot, self IFsm) {
 	fb.Id = id
 	fb.Root = root
 	fb.registerState = make(map[StateId]IState)
 	fb.registerEventHandler = make(map[StateEvent]EventHandler)
 
-	root.RegisterFsm(id, fb)
+	root.RegisterFsm(id, self)
 }
 
-func (fb *FsmBase) Enter() {
-
+func (fb *FsmBase) Enter(id StateId) {
+	fb.ChangeState(id)
 }
 
 func (fb *FsmBase) Update() {
@@ -49,8 +49,19 @@ func (fb *FsmBase) RegisterState(id StateId, state IState) {
 }
 
 func (fb *FsmBase) ChangeState(id StateId) {
+	// 未改变状态，直接返回
+	if id == fb.nowStateId {
+		return
+	}
+
+	if fb.nowStateId != "" {
+		nowState := fb.registerState[fb.nowStateId]
+		nowState.Exit()
+	}
+
 	state := fb.registerState[id]
 	fb.nowStateId = id
+
 	state.Enter()
 }
 
@@ -59,6 +70,16 @@ func (fb *FsmBase) RegisterEvent(event StateEvent, handler EventHandler) {
 }
 
 func (fb *FsmBase) EventHandle(event StateEvent) {
-	handler := fb.registerEventHandler[event]
-	handler(event)
+	handler, found := fb.registerEventHandler[event]
+	if found {
+		handler(event)
+	}
+}
+
+func (fb *FsmBase) StateCount() int {
+	return len(fb.registerState)
+}
+
+func (fb *FsmBase) ResetState() {
+	fb.nowStateId = ""
 }

@@ -15,19 +15,17 @@ type StateBase struct {
 	Fsm IFsm
 }
 
-func (sb *StateBase) Init(id StateId, fsm IFsm) {
+func (sb *StateBase) Init(id StateId, fsm IFsm, self IState) {
 	sb.Id = id
 	sb.Fsm = fsm
 
-	fsm.RegisterState(id, sb)
+	fsm.RegisterState(id, self)
 }
 
 func (sb *StateBase) Enter() {
-
 }
 
 func (sb *StateBase) Update() {
-
 }
 
 func (sb *StateBase) Exit() {
