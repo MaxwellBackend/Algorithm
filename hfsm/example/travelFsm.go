@@ -10,21 +10,35 @@ const EventArriveHome = "ArriveHome"
 // 在路上状态
 type TravelFsm struct {
 	hfsm.FsmBase
+	oldState hfsm.StateId
 }
 
-func (f *TravelFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
-	f.FsmBase.Init(id, root, self)
+func (f *TravelFsm) Init(id hfsm.StateId, parent hfsm.IFsm, self hfsm.IState) {
+	f.FsmBase.Init(id, parent, self)
 
 	f.RegisterEvent(EventArriveCompany, f.handleEventArriveCompany)
 	f.RegisterEvent(EventArriveHome, f.handleEventArriveHome)
 }
 
+func (f *TravelFsm) Enter() {
+	if f.oldState == "" {
+		f.ChangeState("S2HWalkState")
+	} else {
+		f.ChangeState(f.oldState)
+	}
+}
+
+func (f *TravelFsm) Exit() {
+	f.oldState = f.NowStateId
+	f.FsmBase.Exit()
+}
+
 func (f *TravelFsm) handleEventArriveCompany(event hfsm.StateEvent) {
-	f.Root.ChangeFsm("CompanyFsm", "")
+	f.Parent.ChangeState("CompanyFsm")
 }
 
 func (f *TravelFsm) handleEventArriveHome(event hfsm.StateEvent) {
-	f.Root.ChangeFsm("HomeFsm", "")
+	f.Parent.ChangeState("HomeFsm")
 }
 
 // 地铁到公司的走路状态

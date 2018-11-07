@@ -14,16 +14,12 @@ type CompanyFsm struct {
 	hfsm.FsmBase
 }
 
-func (f *CompanyFsm) Enter(id hfsm.StateId) {
-	if id == "" {
-		id = "CodeState"
-	}
-
-	f.FsmBase.Enter(id)
+func (f *CompanyFsm) Enter() {
+	f.FsmBase.ChangeState("CodeState")
 }
 
-func (f *CompanyFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
-	f.FsmBase.Init(id, root, self)
+func (f *CompanyFsm) Init(id hfsm.StateId, parent hfsm.IFsm, self hfsm.IState) {
+	f.FsmBase.Init(id, parent, self)
 
 	f.RegisterEvent(EventCodeEnd, f.handleRandom)
 	f.RegisterEvent(EventReadEnd, f.handleRandom)
@@ -33,7 +29,7 @@ func (f *CompanyFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
 func (f *CompanyFsm) Update() {
 	if now.Hour() >= 18 && now.Minute() >= 30 {
 		log("下班啦")
-		f.Root.ChangeFsm("TravelFsm", "S2CWalkState")
+		f.Parent.ChangeState("TravelFsm")
 		return
 	}
 

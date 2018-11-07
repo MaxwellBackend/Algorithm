@@ -1,11 +1,6 @@
 package hfsm
 
-type FsmId string
-
 type IFsm interface {
-	Enter(id StateId)
-	Update()
-	Exit()
 	RegisterEvent(event StateEvent, handler EventHandler)
 	EventHandle(event StateEvent)
 	RegisterState(id StateId, state IState)
@@ -15,34 +10,32 @@ type IFsm interface {
 type EventHandler func(event StateEvent)
 
 type FsmBase struct {
-	Id                   FsmId
-	Root                 IRoot
-	nowStateId           StateId
+	StateBase
+	Parent               IFsm
+	NowStateId           StateId
 	registerState        map[StateId]IState
 	registerEventHandler map[StateEvent]EventHandler
 }
 
-func (fb *FsmBase) Init(id FsmId, root IRoot, self IFsm) {
+func (fb *FsmBase) Init(id StateId, parent IFsm, self IState) {
 	fb.Id = id
-	fb.Root = root
+	fb.Parent = parent
 	fb.registerState = make(map[StateId]IState)
 	fb.registerEventHandler = make(map[StateEvent]EventHandler)
 
-	root.RegisterFsm(id, self)
-}
-
-func (fb *FsmBase) Enter(id StateId) {
-	fb.ChangeState(id)
+	if parent != nil {
+		parent.RegisterState(id, self)
+	}
 }
 
 func (fb *FsmBase) Update() {
-	nowState := fb.registerState[fb.nowStateId]
+	nowState := fb.registerState[fb.NowStateId]
 	nowState.Update()
 }
 
 func (fb *FsmBase) Exit() {
-	if fb.nowStateId != "" {
-		nowState := fb.registerState[fb.nowStateId]
+	if fb.NowStateId != "" {
+		nowState := fb.registerState[fb.NowStateId]
 		nowState.Exit()
 	}
 
@@ -55,17 +48,17 @@ func (fb *FsmBase) RegisterState(id StateId, state IState) {
 
 func (fb *FsmBase) ChangeState(id StateId) {
 	// 未改变状态，直接返回
-	if id == fb.nowStateId {
+	if id == fb.NowStateId {
 		return
 	}
 
-	if fb.nowStateId != "" {
-		nowState := fb.registerState[fb.nowStateId]
+	if fb.NowStateId != "" {
+		nowState := fb.registerState[fb.NowStateId]
 		nowState.Exit()
 	}
 
 	state := fb.registerState[id]
-	fb.nowStateId = id
+	fb.NowStateId = id
 
 	state.Enter()
 }
@@ -86,5 +79,5 @@ func (fb *FsmBase) StateCount() int {
 }
 
 func (fb *FsmBase) ResetState() {
-	fb.nowStateId = ""
+	fb.NowStateId = ""
 }

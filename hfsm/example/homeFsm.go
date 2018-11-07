@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	EventWashEnd      hfsm.StateEvent = "WashEnd"
+	EventWashEnd hfsm.StateEvent = "WashEnd"
 )
 
 // 在家状态机
@@ -13,26 +13,22 @@ type HomeFsm struct {
 	hfsm.FsmBase
 }
 
-func (f *HomeFsm) Enter(id hfsm.StateId) {
-	if id == "" {
-		if now.Hour() > 22 {
-			id = "SleepState"
-		} else {
-			id = "PlayPhoneState"
-		}
+func (f *HomeFsm) Enter() {
+	if now.Hour() > 22 || now.Hour() < 8 {
+		f.ChangeState("SleepState")
+	} else {
+		f.ChangeState("PlayPhoneState")
 	}
-
-	f.FsmBase.Enter(id)
 }
 
-func (f *HomeFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
-	f.FsmBase.Init(id, root, self)
+func (f *HomeFsm) Init(id hfsm.StateId, parent hfsm.IFsm, self hfsm.IState) {
+	f.FsmBase.Init(id, parent, self)
 
 	f.RegisterEvent(EventWashEnd, f.handleEventWashEnd)
 }
 
 func (f *HomeFsm) handleEventWashEnd(event hfsm.StateEvent) {
-	f.Root.ChangeFsm("TravelFsm", "S2HWalkState")
+	f.Parent.ChangeState("TravelFsm")
 }
 
 // 睡觉

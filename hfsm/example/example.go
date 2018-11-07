@@ -6,13 +6,17 @@ import (
 	"fmt"
 )
 
-var root hfsm.IRoot
+type Root struct {
+	hfsm.FsmBase
+}
+
+var root *Root
 
 var now time.Time
 
 func init () {
-	root = &hfsm.Root{}
-	root.Init()
+	root = &Root{}
+	root.Init("Parent", nil, root)
 
 	homeInit()
 	travelInit()
@@ -25,11 +29,10 @@ func log(msg string) {
 
 func main() {
 	now = time.Date(2018,11,6,6,0,0,0, time.Local)
-	root.ChangeFsm("HomeFsm", "SleepState")
+	root.ChangeState("HomeFsm")
 	for {
 		root.Update()
 		time.Sleep(time.Second / 20)
 		now = now.Add(1 * time.Minute)
-		//log("")
 	}
 }
