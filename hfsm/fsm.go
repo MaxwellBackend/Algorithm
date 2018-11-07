@@ -1,13 +1,13 @@
 package hfsm
 
-type IFsm interface {
-	RegisterEvent(event StateEvent, handler EventHandler)
-	EventHandle(event StateEvent)
-	RegisterState(id StateId, state IState)
-	ChangeState(id StateId)
-}
-
 type EventHandler func(event StateEvent)
+
+type IFsm interface {
+	RegisterEvent(event StateEvent, handler EventHandler) // 注册状态事件
+	EventHandle(event StateEvent)                         // 状态事件处理
+	RegisterState(id StateId, state IState)               // 注册状态
+	ChangeState(id StateId)                               // 转移状态
+}
 
 type FsmBase struct {
 	StateBase

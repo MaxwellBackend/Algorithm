@@ -1,17 +1,17 @@
 package hfsm
 
-type StateId string
+type StateId string // 状态ID
 
-type StateEvent string
+type StateEvent string // 状态事件
 
 type IState interface {
-	Enter()
-	Update()
-	Exit()
+	Enter()  // 进入
+	Update() // 更新
+	Exit()   // 退出
 }
 
 type StateBase struct {
-	Id StateId
+	Id  StateId
 	Fsm IFsm
 }
 
