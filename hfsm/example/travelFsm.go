@@ -20,12 +20,10 @@ func (f *TravelFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
 }
 
 func (f *TravelFsm) handleEventArriveCompany(event hfsm.StateEvent) {
-	f.ResetState()
 	f.Root.ChangeFsm("CompanyFsm", "")
 }
 
 func (f *TravelFsm) handleEventArriveHome(event hfsm.StateEvent) {
-	f.ResetState()
 	f.Root.ChangeFsm("HomeFsm", "")
 }
 
@@ -46,7 +44,7 @@ func (s *S2CWalkState) Enter() {
 
 func (s *S2CWalkState) Update() {
 	s.startTime++
-	if s.startTime >= 5 {
+	if s.startTime >= 10 {
 		if now.Hour() < 12 {
 			s.Fsm.EventHandle(EventArriveCompany)
 		} else {
@@ -59,7 +57,7 @@ func (s *S2CWalkState) Exit() {
 	if now.Hour() < 12 {
 		log("到达公司")
 	} else {
-		log("到达地铁")
+		log("到达桂林路站")
 	}
 }
 
@@ -80,7 +78,7 @@ func (s *S2HWalkState) Enter() {
 
 func (s *S2HWalkState) Update() {
 	s.startTime++
-	if s.startTime >= 10 {
+	if s.startTime >= 20 {
 		if now.Hour() < 12 {
 			s.Fsm.ChangeState("SubwayState")
 		} else {
@@ -91,9 +89,9 @@ func (s *S2HWalkState) Update() {
 
 func (s *S2HWalkState) Exit() {
 	if now.Hour() < 12 {
-		log("到达地铁")
+		log("到达松江站")
 	} else {
-		log("到达公司")
+		log("到家")
 	}
 }
 
@@ -124,7 +122,7 @@ func (s *SubwayState) Update() {
 }
 
 func (s *SubwayState) Exit() {
-	log("离开地铁")
+	log("走出地铁")
 }
 
 func travelInit() {

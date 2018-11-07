@@ -32,7 +32,6 @@ func (f *CompanyFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
 
 func (f *CompanyFsm) Update() {
 	if now.Hour() >= 18 && now.Minute() >= 30 {
-		f.ResetState()
 		log("下班啦")
 		f.Root.ChangeFsm("TravelFsm", "S2CWalkState")
 		return
@@ -61,7 +60,7 @@ func (s *CodeState) Enter() {
 
 func (s *CodeState) Update() {
 	s.startTime++
-	if s.startTime >= 60 {
+	if s.startTime >= 120 {
 		s.Fsm.EventHandle(EventCodeEnd)
 	}
 }
@@ -83,7 +82,7 @@ func (s *ReadState) Enter() {
 
 func (s *ReadState) Update() {
 	s.startTime++
-	if s.startTime >= 30 {
+	if s.startTime >= 60 {
 		s.Fsm.EventHandle(EventReadEnd)
 	}
 }
@@ -105,7 +104,7 @@ func (s *MeetState) Enter() {
 
 func (s *MeetState) Update() {
 	s.startTime++
-	if s.startTime >= 60 {
+	if s.startTime >= 120 {
 		s.Fsm.EventHandle(EventMeetEnd)
 	}
 }

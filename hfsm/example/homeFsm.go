@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	EventWashEnd hfsm.StateEvent = "WashEnd"
+	EventWashEnd      hfsm.StateEvent = "WashEnd"
 )
 
 // 在家状态机
@@ -15,7 +15,11 @@ type HomeFsm struct {
 
 func (f *HomeFsm) Enter(id hfsm.StateId) {
 	if id == "" {
-		id = "SleepState"
+		if now.Hour() > 22 {
+			id = "SleepState"
+		} else {
+			id = "PlayPhoneState"
+		}
 	}
 
 	f.FsmBase.Enter(id)
@@ -23,12 +27,11 @@ func (f *HomeFsm) Enter(id hfsm.StateId) {
 
 func (f *HomeFsm) Init(id hfsm.FsmId, root hfsm.IRoot, self hfsm.IFsm) {
 	f.FsmBase.Init(id, root, self)
-	
+
 	f.RegisterEvent(EventWashEnd, f.handleEventWashEnd)
 }
 
 func (f *HomeFsm) handleEventWashEnd(event hfsm.StateEvent) {
-	f.ResetState()
 	f.Root.ChangeFsm("TravelFsm", "S2HWalkState")
 }
 
@@ -38,11 +41,11 @@ type SleepState struct {
 }
 
 func (s *SleepState) Enter() {
-	log("开始睡觉")
+	log("睡觉")
 }
 
 func (s *SleepState) Update() {
-	if now.Hour() == 7 && now.Minute() == 0 {
+	if now.Hour() == 8 && now.Minute() == 0 {
 		s.Fsm.ChangeState("WashState")
 	}
 }
@@ -54,6 +57,23 @@ func (s *SleepState) Exit() {
 // 玩手机
 type PlayPhoneState struct {
 	hfsm.StateBase
+	startTime int
+}
+
+func (s *PlayPhoneState) Enter() {
+	s.startTime = 0
+	log("开始玩手机")
+}
+
+func (s *PlayPhoneState) Update() {
+	s.startTime++
+	if s.startTime >= 120 {
+		s.Fsm.ChangeState("SleepState")
+	}
+}
+
+func (s *PlayPhoneState) Exit() {
+	log("不玩手机了")
 }
 
 // 洗漱
@@ -64,20 +84,19 @@ type WashState struct {
 
 func (s *WashState) Enter() {
 	s.startTime = 0
-	log("开始洗漱")
+	log("洗漱")
 }
 
 func (s *WashState) Update() {
 	s.startTime++
-	if s.startTime >= 20 {
+	if s.startTime >= 30 {
 		s.Fsm.EventHandle(EventWashEnd)
 	}
 }
 
 func (s *WashState) Exit() {
-	log("结束洗漱")
+	log("出门")
 }
-
 
 func homeInit() {
 	homeFsm := &HomeFsm{}

@@ -41,7 +41,12 @@ func (fb *FsmBase) Update() {
 }
 
 func (fb *FsmBase) Exit() {
+	if fb.nowStateId != "" {
+		nowState := fb.registerState[fb.nowStateId]
+		nowState.Exit()
+	}
 
+	fb.ResetState()
 }
 
 func (fb *FsmBase) RegisterState(id StateId, state IState) {
